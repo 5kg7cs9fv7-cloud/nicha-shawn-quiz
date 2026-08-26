@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Will Nicha ever love Shawn ever again?</title>
+  <style>
+    :root{
+      --card-bg: rgba(255,255,255,0.95);
+      --accent: #ff5c8a;
+      --muted: #444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:var(--muted);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><text x='50%' y='50%' font-size='64' text-anchor='middle' dominant-baseline='middle'>🌹</text></svg>");
+      background-size:120px 120px;
+      background-repeat:repeat;
+      padding:20px;
+    }
+
+    /* Shared card */
+    .card{
+      position:relative;
+      max-width:820px;
+      width:100%;
+      background:var(--card-bg);
+      padding:32px;
+      border-radius:16px;
+      box-shadow:0 8px 30px rgba(16,24,40,0.10);
+      text-align:center;
+      transition:opacity .18s ease, transform .18s ease;
+    }
+
+    h1{ margin:0; font-size:clamp(22px,3.6vw,36px); line-height:1.1; }
+
+    /* Screen containers */
+    .screen{ display:none; }
+    .screen.active{ display:block; }
+
+    /* Buttons area for first screen */
+    .buttons{
+      margin-top:20px;
+      height:120px;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .btn{
+      appearance:none;
+      border:0;
+      padding:12px 22px;
+      font-size:18px;
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+      transition:transform 0.12s ease;
+      box-shadow: 0 6px 18px rgba(16,24,40,0.08);
+    }
+    .yes{
+      background:linear-gradient(180deg,#ff6b92 0%, #ff4f7a 100%);
+      color:white;
+      margin-right:18px;
+      position:relative;
+      z-index:2;
+    }
+    .no{
+      background:#333;
+      color:white;
+      position:absolute;
+      left:60%;
+      top:18px;
+      transform:translate(-50%,0);
+      z-index:3;
+    }
+    .hint{ margin-top:16px; color:#666; }
+
+    /* Result screen styles */
+    .result-card{ display:flex; flex-direction:column; align-items:center; padding:40px; }
+    .big-rose{ font-size:72px; margin-bottom:8px; filter:drop-shadow(0 8px 18px rgba(255, 92, 138, 0.18)); }
+    .result-card h1{ margin: 28px 0 8px 0; /* lowered heading */ font-size:clamp(20px,3.2vw,32px); }
+    .poem{ margin:12px 0; color:#444; font-style:italic; line-height:1.4; }
+    .actions{ display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; justify-content:center; }
+    .ghost-btn{ background:transparent; border:1px solid rgba(0,0,0,0.08); padding:10px 14px; border-radius:12px; cursor:pointer; }
+    .send{ background:linear-gradient(180deg,#ffb3c6,#ff6b92); color:white; border:0; padding:10px 16px; border-radius:12px; }
+    .warranty{ text-align:left; background:#fff7f9; padding:12px; border-radius:10px; border:1px solid rgba(255,92,138,0.08); margin-top:12px; max-width:640px; }
+    .contract{ font-family:monospace; background:#fefefe; padding:10px; border-radius:8px; border:1px dashed rgba(0,0,0,0.06); }
+    a{ color:var(--accent); text-decoration:none }
+    a:hover{text-decoration:underline}
+
+    /* Confetti */
+    .confetti{ position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; overflow:hidden; z-index:999; }
+    .confetti span{ position:absolute; font-size:20px; animation:fall linear forwards; opacity:0.95; }
+    @keyframes fall{ to { transform: translateY(120vh) rotate(360deg); opacity:0.9; } }
+
+    /* Small responsiveness */
+    @media (max-width:520px){
+      .buttons{height:160px}
+      .no{top:12px}
+    }
+
+    /* feedback states */
+    .copied { color:#0b8a3e; font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="card" role="main" aria-labelledby="q">
+
+    <!-- SCREEN 1 -->
+    <section id="screen1" class="screen active" aria-live="polite">
+      <h1 id="q">Will Nicha ever love Shawn ever again?</h1>
+
+      <div class="buttons" id="buttonsArea">
+        <button id="yesBtn" class="btn yes" aria-label="Yes — she will">Yes</button>
+        <button id="noBtn" class="btn no" aria-label="No — try to click me">No</button>
+      </div>
+
+      <p id="hint" class="hint">Try to click "No" — it moves around! After 5 attempts it continues to the next screen.</p>
+    </section>
+
+    <!-- SCREEN 2 -->
+    <section id="screen2" class="screen" aria-live="polite">
+      <div class="result-card">
+        <div class="big-rose" aria-hidden="true">🌹</div>
+        <h1 id="resultMessage">...</h1>
+
+        <div id="extraContent" aria-hidden="true"></div>
+
+        <div class="actions" id="actionRow" aria-hidden="true" style="display:none">
+          <button id="sendBtn" class="send">Send to Shawn</button>
+          <button id="copyBtn" class="ghost-btn">Copy link</button>
+          <button id="againBtn" class="ghost-btn">Try again</button>
+        </div>
+
+        <div id="warrantyBox" class="warranty" style="display:none" aria-hidden="true"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
+  <script>
+    // Elements
+    const screen1 = document.getElementById('screen1');
+    const screen2 = document.getElementById('screen2');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const hint = document.getElementById('hint');
+    const card = document.querySelector('.card');
+    const buttonsArea = document.getElementById('buttonsArea');
+
+    const resultMessage = document.getElementById('resultMessage');
+    const extraContent = document.getElementById('extraContent');
+    const actionRow = document.getElementById('actionRow');
+    const sendBtn = document.getElementById('sendBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const againBtn = document.getElementById('againBtn');
+    const warrantyBox = document.getElementById('warrantyBox');
+    const confetti = document.getElementById('confetti');
+
+    // Logic for No button jumps (now avoids overlapping the Yes button)
+    let jumps = 0;
+    const maxJumps = 5;
+
+    function updateHint() {
+      const left = Math.max(0, maxJumps - jumps);
+      hint.textContent = left > 0
+        ? `No button moved ${jumps} time(s). ${left} move(s) left before the next screen.`
+        : 'Redirecting…';
+    }
+
+    function rectsOverlap(a, b) {
+      return !(a.left + a.width < b.left ||
+               b.left + b.width < a.left ||
+               a.top + a.height < b.top ||
+               b.top + b.height < a.top);
+    }
+
+    function moveNoButton() {
+      jumps++;
+      updateHint();
+
+      if (jumps >= maxJumps) {
+        showResult('no');
+        return;
+      }
+
+      const area = buttonsArea.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const yesRect = yesBtn.getBoundingClientRect();
+
+      // Convert yesRect to coordinates relative to the buttonsArea
+      const yesRel = {
+        left: Math.max(0, yesRect.left - area.left),
+        top: Math.max(0, yesRect.top - area.top),
+        width: yesRect.width,
+        height: yesRect.height
+      };
+
+      const padding = 8;
+      const maxLeft = Math.max(0, area.width - btnRect.width - padding);
+      const maxTop = Math.max(0, area.height - btnRect.height - padding);
+
+      // Try random positions until one does not overlap the Yes button (limit attempts)
+      let left, top;
+      let attempts = 0;
+      const buffer = 8; // extra space between buttons
+      do {
+        left = Math.random() * maxLeft;
+        top = Math.random() * maxTop;
+        const candidate = { left, top, width: btnRect.width, height: btnRect.height };
+        // Expand yesRel by buffer to avoid too-close placement
+        const yesExpanded = {
+          left: Math.max(0, yesRel.left - buffer),
+          top: Math.max(0, yesRel.top - buffer),
+          width: yesRel.width + buffer * 2,
+          height: yesRel.height + buffer * 2
+        };
+        if (!rectsOverlap(candidate, yesExpanded)) break;
+        attempts++;
+      } while (attempts < 30);
+
+      // Apply position relative to the buttonsArea
+      noBtn.style.left = left + 'px';
+      noBtn.style.top = top + 'px';
+
+      // playful nudge
+      noBtn.style.transform = 'translateY(-6px)';
+      setTimeout(()=> noBtn.style.transform = 'translateY(0)', 140);
+    }
+
+    noBtn.addEventListener('mouseenter', moveNoButton);
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault(); // avoid accidental click
+      moveNoButton();
+    });
+
+    yesBtn.addEventListener('click', () => {
+      showResult('yes');
+    });
+
+    // Show result screen (single-file SPA)
+    function showResult(choice) {
+      // update hash so the link can be copied and the page opened directly later
+      location.hash = 'choice=' + choice;
+
+      screen1.classList.remove('active');
+      screen2.classList.add('active');
+
+      // Prepare content
+      if (choice === 'yes') {
+        resultMessage.textContent = "Yes — love wins! 💖";
+        extraContent.innerHTML = `<div class="poem">Roses are red,<br>You clicked with care —<br>Hearts did a jig,<br>Now love's in the air.</div>
+          <div class="contract">Official result: You clicked "Yes". Expect spontaneous smiling, increased heart-rate, and a possible rose delivery.</div>`;
+        warrantyBox.style.display = 'none';
+        // confetti
+        emitConfetti();
+      } else {
+        resultMessage.textContent = "It took five tries, but the universe opened a door... 🌹";
+        extraContent.innerHTML = `<div class="poem">You chased the No like a cat after tea,<br>It danced and it dodged, then finally let you be.<br>Five jumps later, here's your prize: a rose and a sigh.</div>
+          <div class="contract">LOVE WARRANTY (Expires never):<br>- Coverage: hugs, small surprises, and terrible puns.<br>- Void if left unanswered for more than 48 hours.<br>- Non-transferable, emotionally binding.</div>`;
+        warrantyBox.style.display = 'block';
+        warrantyBox.innerHTML = `<strong>Apology Contract</strong>
+          <div style="margin-top:8px">I, ________, solemnly promise to bring a rose, a joke, and one sincere compliment within 7 days. <em>Sign below:</em></div>
+          <div style="margin-top:8px"><button id="signBtn" class="ghost-btn">Sign with Honour (I do)</button></div>`;
+        // sign handler
+        setTimeout(() => {
+          const signBtn = document.getElementById('signBtn');
+          if (signBtn) signBtn.addEventListener('click', ()=> {
+            warrantyBox.innerHTML += '<div style="margin-top:10px;color:#0b8a3e;font-weight:600">Signed! Now deliver the rose 🌹</div>';
+          });
+        }, 0);
+      }
+
+      // show actions
+      actionRow.style.display = 'flex';
+      actionRow.removeAttribute('aria-hidden');
+
+      // move focus for accessibility
+      resultMessage.setAttribute('tabindex','-1');
+      resultMessage.focus();
+    }
+
+    // Confetti (emoji-based)
+    function emitConfetti() {
+      confetti.innerHTML = '';
+      const emojis = ['💖','💘','💞','🌹','💕'];
+      for (let i=0;i<28;i++){
+        const el = document.createElement('span');
+        el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        const left = Math.random()*100;
+        const delay = Math.random()*0.6;
+        const duration = 3 + Math.random()*3;
+        el.style.left = left + 'vw';
+        el.style.top = (-10 - Math.random()*20) + 'vh';
+        el.style.fontSize = (12 + Math.random()*36) + 'px';
+        el.style.animationDuration = duration + 's';
+        el.style.animationDelay = delay + 's';
+        el.style.transform = 'rotate(' + (Math.random()*360) + 'deg)';
+        confetti.appendChild(el);
+      }
+      confetti.setAttribute('aria-hidden','false');
+      setTimeout(()=> confetti.setAttribute('aria-hidden','true'), 6200);
+    }
+
+    // Send email (mailto) to eric_155@hotmail.com
+    sendBtn.addEventListener('click', ()=>{
+      const subject = encodeURIComponent("A small message (from a page)");
+      const bodyLines = [
+        (location.hash.includes('choice=yes')) ? "I clicked Yes — maybe it's a sign 😅" : "I fought the No button 5 times and reached this page — please take this rose 🌹",
+        "",
+        "— Sent from our silly romance page"
+      ];
+      const body = encodeURIComponent(bodyLines.join("\n"));
+      window.location.href = `mailto:eric_155@hotmail.com?subject=${subject}&body=${body}`;
+    });
+
+    // Copy link (includes hash so choice is preserved)
+    copyBtn.addEventListener('click', async ()=>{
+      try {
+        await navigator.clipboard.writeText(location.href);
+        copyBtn.textContent = 'Link copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(()=> { copyBtn.textContent = 'Copy link'; copyBtn.classList.remove('copied'); }, 2200);
+      } catch (e) {
+        copyBtn.textContent = 'Could not copy';
+        setTimeout(()=> { copyBtn.textContent = 'Copy link'; }, 2200);
+      }
+    });
+
+    // Try again: reset to first screen and reset state
+    againBtn.addEventListener('click', ()=>{
+      location.hash = ''; // clear
+      screen2.classList.remove('active');
+      screen1.classList.add('active');
+      actionRow.style.display = 'none';
+      extraContent.innerHTML = '';
+      warrantyBox.innerHTML = '';
+      warrantyBox.style.display = 'none';
+      jumps = 0;
+      updateHint();
+      // reset No button position to default
+      noBtn.style.left = '60%';
+      noBtn.style.top = '18px';
+    });
+
+    // On load: if there's a hash like #choice=yes or #choice=no show result
+    window.addEventListener('load', ()=>{
+      const hash = location.hash || '';
+      const m = hash.match(/choice=(yes|no)/);
+      if (m) {
+        // restore directly to the result view
+        showResult(m[1]);
+      }
+    });
+
+    // Initialize hint
+    updateHint();
+  </script>
+</body>
+</html>
